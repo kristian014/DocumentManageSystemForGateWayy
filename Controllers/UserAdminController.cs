@@ -10,7 +10,7 @@ using System.Web.Mvc;
 
 namespace IdentitySample.Controllers
 {
-    [Authorize(Roles = CustomRoles.Administrator )]
+  //  [Authorize(Roles = CustomRoles.Administrator )]
     public class UsersAdminController : Controller
     {
         public UsersAdminController()
