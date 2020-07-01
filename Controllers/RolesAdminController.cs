@@ -12,7 +12,7 @@ using DocumentManageSystemForGateWay.Models;
 
 namespace IdentitySample.Controllers
 {
-  // [Authorize(Roles = CustomRoles.Administrator)]
+   [Authorize(Roles = CustomRoles.Administrator)]
     public class RolesAdminController : Controller
     {
         public RolesAdminController()
