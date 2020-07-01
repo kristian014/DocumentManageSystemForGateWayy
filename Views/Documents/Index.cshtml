@@ -1,0 +1,113 @@
+﻿@model IEnumerable<DocumentManageSystemForGateWay.Models.Document>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @*@(String.IsNullOrWhiteSpace(Model) ? "Showing all" : "Your search for" + Model. + "Found")*@ 
+
+</p>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Category.Name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.SelectedStartDate)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.SelectedEndDate)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Description)
+        </th>
+        <th>Total Files</th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Category.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.SelectedStartDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.SelectedEndDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Description)
+            </td>
+
+            <td>
+                @if (item.FileUploads.Count() == 0)
+                {
+                    <span>No File Available</span>
+                }
+                else
+                {
+                    <span>@item.FileUploads.Count() File(s)</span>
+                }
+        </td>
+        <td>
+
+            @Html.ActionLink("Edit", "Edit", new { id = item.DocumentID }) |
+            @Html.ActionLink("Details", "Details", new { id = item.DocumentID }) |
+
+            @if (User.Identity.IsAuthenticated)
+            {
+                if (User.IsInRole("Admin"))
+                {
+                    @*@Html.ActionLink("Admin", "AdminController")*@
+                    @*<a href="javascript:void(0);" data-id="@item.DocumentID" class="deleteItem">Delete</a>*@
+                    @Html.ActionLink("Delete", "Delete", new { id = item.DocumentID })
+                }
+            }
+
+        </td>
+    </tr>
+}
+
+</table>
+
+<script>
+
+    $('.deleteItem').click(function (e) {
+        e.preventDefault();
+        var $ctrl = $(this);
+        if (confirm('Do you really want to delete this item?')) {
+            $.ajax({
+                url: '@Url.Action("Delete" , "Documents")',
+                type: 'POST',
+                data: { id: $(this).data('id') }
+            }).done(function (data) {
+                if (data.Result == "OK") {
+                    $ctrl.closest('tr').remove();
+                    location.reload();
+                }
+                else if (data.Result.Message) {
+                    alert(data.Result.Message);
+                }
+            }).fail(function () {
+                alert("There is something wrong. Please try again.");
+            })
+
+        }
+    });
+
+</script>

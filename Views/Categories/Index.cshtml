@@ -1,0 +1,41 @@
+﻿@model IEnumerable<DocumentManageSystemForGateWay.Models.Category>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Name)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.Name)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id = item.CategoryId }) |
+            @Html.ActionLink("Details", "Details", new { id = item.CategoryId }) |
+
+            @if (User.Identity.IsAuthenticated)
+            {
+                if (User.IsInRole("Admin"))
+                {
+                    @*<button type="button" class="btn btn-danger"> <i class="fas fa-trash-alt mr-1"></i>*@ @Html.ActionLink("Delete", "Delete", new { id = item.CategoryId })@*</button>*@
+                            }
+                            }
+
+                </td>
+    </tr>
+}
+
+</table>
