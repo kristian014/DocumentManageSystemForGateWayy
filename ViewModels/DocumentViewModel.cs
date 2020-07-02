@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web;
+using DocumentManageSystemForGateWay.Models;
 
-namespace DocumentManageSystemForGateWay.Models
+namespace DocumentManageSystemForGateWay.ViewModels
 {
-    public class Document
+    public class DocumentViewModel
     {
         [Key]
         public int DocumentID { get; set; }
@@ -37,8 +38,16 @@ namespace DocumentManageSystemForGateWay.Models
 
         public virtual Category Category { get; set; }
 
-        public  ICollection<FileUpload> FileUploads { get; set; }
+       // public virtual ICollection<FileUpload> FileUploads { get; set; }
+        // public string Search { get; set; }
+
+        public string Categories { get; set; }
+
+        public IQueryable<Document> Documents { get; set; }
         public string Search { get; set; }
+
+       // public virtual ICollection<FileUpload> FileUploads { get; set; }
+
 
     }
 }

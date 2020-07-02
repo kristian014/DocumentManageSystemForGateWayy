@@ -1,4 +1,7 @@
-﻿@model IEnumerable<DocumentManageSystemForGateWay.Models.Document>
+﻿@using DocumentManageSystemForGateWay.ViewModels
+
+@model DocumentManageSystemForGateWay.ViewModels.DocumentViewModel
+
 
 @{
     ViewBag.Title = "Index";
@@ -7,12 +10,21 @@
 <h2>Index</h2>
 
 <p>
-    @*@(String.IsNullOrWhiteSpace(Model) ? "Showing all" : "Your search for" + Model. + "Found")*@ 
+    @*@(String.IsNullOrWhiteSpace(Model.Search) ? "Showing all" : "Your search for" + Model.Documents + "Found")*@
 
 </p>
 
 <p>
     @Html.ActionLink("Create New", "Create")
+
+    @using (Html.BeginForm("Index", "Documents", FormMethod.Get))
+    {
+        <label> Filter by Category:</label>
+        @Html.DropDownList("Category", "All");
+        <input type="submit" value="Filter" />
+        <input type="hidden" name="Search" id="Search" value="@Model.Search" />
+
+    }
 </p>
 <table class="table">
     <tr>
@@ -35,7 +47,7 @@
         <th></th>
     </tr>
 
-    @foreach (var item in Model)
+    @foreach (var item in Model.Documents)
     {
         <tr>
             <td>
@@ -46,6 +58,7 @@
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.SelectedStartDate)
+
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.SelectedEndDate)
@@ -54,7 +67,7 @@
                 @Html.DisplayFor(modelItem => item.Description)
             </td>
 
-            <td>
+            @*<td>
                 @if (item.FileUploads.Count() == 0)
                 {
                     <span>No File Available</span>
@@ -63,25 +76,25 @@
                 {
                     <span>@item.FileUploads.Count() File(s)</span>
                 }
-        </td>
-        <td>
+            </td>*@
+            <td>
 
-            @Html.ActionLink("Edit", "Edit", new { id = item.DocumentID }) |
-            @Html.ActionLink("Details", "Details", new { id = item.DocumentID }) |
+                @Html.ActionLink("Edit", "Edit", new { id = item.DocumentID }) |
+                @Html.ActionLink("Details", "Details", new { id = item.DocumentID }) |
 
-            @if (User.Identity.IsAuthenticated)
-            {
-                if (User.IsInRole("Admin"))
+                @if (User.Identity.IsAuthenticated)
                 {
-                    @*@Html.ActionLink("Admin", "AdminController")*@
-                    @*<a href="javascript:void(0);" data-id="@item.DocumentID" class="deleteItem">Delete</a>*@
-                    @Html.ActionLink("Delete", "Delete", new { id = item.DocumentID })
+                    if (User.IsInRole("Admin"))
+                    {
+                        @*@Html.ActionLink("Admin", "AdminController")*@
+                        @*<a href="javascript:void(0);" data-id="@item.DocumentID" class="deleteItem">Delete</a>*@
+                        @Html.ActionLink("Delete", "Delete", new { id = item.DocumentID })
+                    }
                 }
-            }
 
-        </td>
-    </tr>
-}
+            </td>
+        </tr>
+    }
 
 </table>
 

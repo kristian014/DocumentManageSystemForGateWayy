@@ -21,33 +21,69 @@
                 @Html.ActionLink("Document Management System", "Index", "Home", null, new { @class = "navbar-brand" })
             </div>
             <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
-                  
-                    @if (Request.IsAuthenticated && User.IsInRole("Admin")) {
-                     
+
+
+                @if (Request.IsAuthenticated && User.IsInRole("Admin"))
+                {
+                <div class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
                         <li>@Html.ActionLink("RolesAdmin", "Index", "RolesAdmin")</li>
-                    <li>@Html.ActionLink("UsersAdmin", "Index", "UsersAdmin")</li>
-                    <li>@Html.ActionLink("Contract Category", "Index", "Categories")</li>
-                    <li>@Html.ActionLink("Manage Document", "Index", "Documents")</li>
-                    }
+                        <li>@Html.ActionLink("UsersAdmin", "Index", "UsersAdmin")</li>
+                        <li>@Html.ActionLink("Contract Category", "Index", "Categories")</li>
+                        <li>@Html.ActionLink("Manage Document", "Index", "Documents")</li>
+                    </ul>
                     
+                    @using (Html.BeginForm("Index", "Documents", FormMethod.Get, new {@class = "navbar-form Navbar-left"}))
+                    {
+                    <div class="form-group">
+                        @Html.TextBox("Search", null, new {@class = "form-control", @placeholder = "Search Documents"})
+
+                    </div>
+                    <button type="submit" class="btn btn-default"> Submit</button>
+                    }
+
+                   
+                </div>
+                }
+
                 else if (Request.IsAuthenticated && User.IsInRole("User"))
                 {
-                   
-                    <li>@Html.ActionLink("Contract Category", "Index", "Categories")</li>
-                    <li>@Html.ActionLink("Manage Document", "Index", "Documents")</li>
+                    <div class="navbar-collapse collapse">
+                        <ul class="nav navbar-nav">
+
+                            <li>@Html.ActionLink("Contract Category", "Index", "Categories")</li>
+                            <li>@Html.ActionLink("Manage Document", "Index", "Documents")</li>
+                        </ul>
+
+                        @using (Html.BeginForm("Index", "Documents", FormMethod.Get, new {@class = "navbar-form Navbar-left"}))
+                        {
+                            <div class="form-group">
+                                @Html.TextBox("Search", null, new {@class = "form-control", @placeholder = "Search Documents"})
+
+                            </div>
+                            <button type="submit" class="btn btn-default"> Submit</button>
+                        }
+
+                    </div>
                 }
                 else
                 {
-                    <li>@Html.ActionLink("Home", "Index", "Home")</li>
-                    <li>@Html.ActionLink("About", "About", "Home")</li>
-                    <li>@Html.ActionLink("Contact", "Contact", "Home")</li>
+
+                        
+                    <ul class="nav navbar-nav">
+                        <li>@Html.ActionLink("Home", "Index", "Home")</li>
+                        <li>@Html.ActionLink("About", "About", "Home")</li>
+                        <li>@Html.ActionLink("Contact", "Contact", "Home")</li>
+                    </ul>
+                           
                 }
-                </ul>
+
                 @Html.Partial("_LoginPartial")
+
             </div>
-        </div>
-    </div>
+                </div>
+            </div>
+
     <div class="container body-content">
         @RenderBody()
         <hr />

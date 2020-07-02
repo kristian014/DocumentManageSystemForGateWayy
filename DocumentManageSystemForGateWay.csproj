@@ -186,6 +186,7 @@
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\AdminViewModel.cs" />
     <Compile Include="Models\Category.cs" />
+    <Compile Include="Models\Constant.cs" />
     <Compile Include="Models\CustomRoles.cs" />
     <Compile Include="Models\Document.cs" />
     <Compile Include="Models\FileUpload.cs" />
@@ -193,6 +194,7 @@
     <Compile Include="Models\ManageViewModels.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
+    <Compile Include="ViewModels\DocumentViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap-theme.css" />

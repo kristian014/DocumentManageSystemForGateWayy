@@ -8,6 +8,7 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using DocumentManageSystemForGateWay.Models;
+using DocumentManageSystemForGateWay.ViewModels;
 using IdentitySample.Models;
 
 namespace DocumentManageSystemForGateWay.Controllers
@@ -20,13 +21,14 @@ namespace DocumentManageSystemForGateWay.Controllers
         // GET: Documents
         public ActionResult Index(string category, string search)
         {
+            DocumentViewModel model = new DocumentViewModel();
             var documents = db.Documents.Include(d => d.Category);
 
             if (!String.IsNullOrEmpty(search))
             {
                 documents = documents.Where(p =>
                     p.Name.Contains(search) || p.Description.Contains(search) || p.Category.Name.Contains(search));
-                ViewBag.Search = search;
+                model.Search = search;
                // model.Search = search;
             }
 
@@ -35,11 +37,11 @@ namespace DocumentManageSystemForGateWay.Controllers
             if (!String.IsNullOrEmpty(category))
             {
                 documents = documents.Where(p => p.Category.Name == category);
-                ViewBag.Categories = category;
+                model.Categories = category;
             }
             ViewBag.Category = new SelectList(categories);
-
-            return View(documents.ToList());
+            model.Documents = documents;
+            return View(model);
         }
 
         // GET: Documents/Details/5
@@ -71,11 +73,17 @@ namespace DocumentManageSystemForGateWay.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create([Bind(Include = "DocumentID,Name,SelectedStartDate,SelectedEndDate,Description,CategoryID")] Document document)
         {
+
+
+            bool allValid = true;
+            string inValidFiles = "";
+
             if (ModelState.IsValid)
             {
                 List<FileUpload> fileUploads = new List<FileUpload>();
                 for (int i = 0; i < Request.Files.Count; i++)
                 {
+
                     var file = Request.Files[i];
 
                     if (file != null && file.ContentLength > 0)
@@ -262,5 +270,17 @@ namespace DocumentManageSystemForGateWay.Controllers
             }
             base.Dispose(disposing);
         }
+
+        private bool ValidateFile(HttpPostedFileBase file)
+        {
+            string fileExtension = System.IO.Path.GetExtension(file.FileName).ToLower();
+            string[] allowedFileTypes = {  ".pdf" , "doc" };
+            if ((file.ContentLength > 0 && file.ContentLength < 2097152) && allowedFileTypes.Contains(fileExtension))
+            {
+                return true;
+            }
+            return false;
+        }
+
     }
 }
