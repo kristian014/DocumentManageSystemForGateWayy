@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -71,46 +73,212 @@ namespace DocumentManageSystemForGateWay.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "DocumentID,Name,SelectedStartDate,SelectedEndDate,Description,CategoryID")] Document document)
+        public ActionResult Create([Bind(Include = "DocumentID,Name,SelectedStartDate,SelectedEndDate,Description,CategoryID")] Document document, HttpPostedFileBase files)
         {
-
 
             bool allValid = true;
             string inValidFiles = "";
 
-            if (ModelState.IsValid)
+            //if (ModelState.IsValid)
+            //{
+            //New Files
+            List<FileUpload> fileUploads = new List<FileUpload>();
+            //for (int i = 0; i < Request.Files.Count; i++)
+            //{
+            //var files = Request.Files[i];
+
+            if (files != null)
             {
-                List<FileUpload> fileUploads = new List<FileUpload>();
-                for (int i = 0; i < Request.Files.Count; i++)
+                if (files.ContentLength > 0)
                 {
 
-                    var file = Request.Files[i];
-
-                    if (file != null && file.ContentLength > 0)
+                    if (!ValidateFile(files))
                     {
-                        var fileName = Path.GetFileName(file.FileName);
-                        FileUpload fileUpload = new FileUpload()
-                        {
-                            FileName = fileName,
-                            Extension = Path.GetExtension(fileName),
-                            Id = Guid.NewGuid()
-                        };
-                        fileUploads.Add(fileUpload);
+                        allValid = false;
+                        inValidFiles += ", " + files.FileName;
+                    }
 
-                        var path = Path.Combine(Server.MapPath("~/Content/Upload/"), fileUpload.Id + fileUpload.Extension);
-                        file.SaveAs(path);
+
+
+                    if (allValid)
+                    {
+
+                        try
+                        {
+                            //SaveFileToDisk(file);
+                            var fileName = Path.GetFileName(files.FileName);
+                            FileUpload fileUpload = new FileUpload()
+                            {
+                                FileName = fileName,
+                                Extension = Path.GetExtension(fileName),
+                                Id = Guid.NewGuid()
+                            };
+                            fileUploads.Add(fileUpload);
+
+
+                            var path = Path.Combine(Server.MapPath(Constant.Documentpath),
+                                fileUpload.Id + fileUpload.Extension);
+                            files.SaveAs(path);
+
+                        }
+                        catch (Exception)
+                        {
+                            ModelState.AddModelError("FileName",
+                                "Sorry an error occurred saving the files to disk, please try again");
+                        }
+
+
+                    }
+
+                    //else add an error listing out the invalid files            
+                    else
+                    {
+                        ModelState.AddModelError("FileName",
+                            "All files must be pdf, doc and less than 2MB in size.The following files" +
+                            inValidFiles + " are not valid");
+                    }
+
+                }
+
+                //the user has entered more than 10 files
+                else
+                {
+                    ModelState.AddModelError("FileName", "Please only upload up to ten files at a time");
+                }
+
+
+            }
+            else
+            {
+                //if the user has not entered a file return an error message
+                ModelState.AddModelError("FileName", "Please choose a file");
+            }
+
+
+            if (ModelState.IsValid)
+            {
+                bool duplicates = false;
+                bool otherDbError = false;
+                string duplicateFiles = "";
+
+                var Document = new FileUpload { FileName = files.FileName };
+                try
+                {
+                    document.FileUploads = fileUploads;
+                    db.Documents.Add(document);
+                    db.SaveChanges();
+
+                }
+                catch (DbUpdateException ex)
+                {
+                    SqlException innerException = ex.InnerException.InnerException as SqlException;
+                    if (innerException != null && innerException.Number == 2601)
+                    {
+                        duplicateFiles += ", " + files.FileName;
+                        duplicates = true;
+                        db.Entry(document).State = EntityState.Detached;
+                    }
+                    else
+                    {
+                        otherDbError = true;
                     }
                 }
 
-                document.FileUploads = fileUploads;
-                db.Documents.Add(document);
-                db.SaveChanges();
+
+                if (duplicates)
+                {
+                    ModelState.AddModelError("FileName",
+                        "All files uploaded except the files" + duplicateFiles +
+                        ", which already exist in the system." +
+                        " Please delete them and try again if you wish to re-add them");
+                    return View();
+                }
+
+                if (otherDbError)
+                {
+                    ModelState.AddModelError("FileName",
+                        "Sorry an error has occurred saving to the database, please try again");
+                    return View();
+                }
+
+                ViewBag.CategoryID = new SelectList(db.Categories, "CategoryId", "Name", document.CategoryID);
                 return RedirectToAction("Index");
+
             }
 
+            //}
+
+
             ViewBag.CategoryID = new SelectList(db.Categories, "CategoryId", "Name", document.CategoryID);
-            return View(document);
+            return View();
+
+
+            // return View(document);
+
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        //bool allValid = true;
+        //string inValidFiles = "";
+
+        //if (ModelState.IsValid)
+        //{
+        //    List<FileUpload> fileUploads = new List<FileUpload>();
+        //    for (int i = 0; i < Request.Files.Count; i++)
+        //    {
+
+        //        var file = Request.Files[i];
+
+        //        if (file != null && file.ContentLength > 0)
+        //        {
+        //            var fileName = Path.GetFileName(file.FileName);
+        //            FileUpload fileUpload = new FileUpload()
+        //            {
+        //                FileName = fileName,
+        //                Extension = Path.GetExtension(fileName),
+        //                Id = Guid.NewGuid()
+        //            };
+        //            fileUploads.Add(fileUpload);
+
+        //            var path = Path.Combine(Server.MapPath("~/Content/Upload/"), fileUpload.Id + fileUpload.Extension);
+        //            file.SaveAs(path);
+        //        }
+        //    }
+
+        //    document.FileUploads = fileUploads;
+        //    db.Documents.Add(document);
+        //    db.SaveChanges();
+        //    return RedirectToAction("Index");
+        //}
+
+        //ViewBag.CategoryID = new SelectList(db.Categories, "CategoryId", "Name", document.CategoryID);
+        //return View(document);
+    
 
         // GET: Documents/Edit/5
         [HttpGet]
@@ -154,10 +322,10 @@ namespace DocumentManageSystemForGateWay.Controllers
                           Id = Guid.NewGuid(),
                           DocumentId = document.DocumentID
                       };
-                      var path = Path.Combine(Server.MapPath("~/Content/Upload/"), fileUpload.Id + fileUpload.Extension);
+                      var path = Path.Combine(Server.MapPath(Constant.Documentpath), fileUpload.Id + fileUpload.Extension);
                         file.SaveAs(path);
  
-                      db.Entry(fileUpload).State = EntityState.Added;
+                      db.Entry(fileUpload).State = EntityState.Modified;
                   }
               }
  
@@ -194,7 +362,7 @@ namespace DocumentManageSystemForGateWay.Controllers
                 db.SaveChanges();
 
                 //Delete file from the file system
-                var path = Path.Combine(Server.MapPath("~/Content/Upload/"), fileUpload.Id + fileUpload.Extension);
+                var path = Path.Combine(Server.MapPath(Constant.Documentpath), fileUpload.Id + fileUpload.Extension);
                 if (System.IO.File.Exists(path))
                 {
                     System.IO.File.Delete(path);
@@ -242,17 +410,21 @@ namespace DocumentManageSystemForGateWay.Controllers
 
                 //delete files from the file system
 
-                foreach (var item in document.FileUploads)
-                {
-                    String path = Path.Combine(Server.MapPath("~/Content/Upload/"), item.Id + item.Extension);
-                    if (System.IO.File.Exists(path))
-                    {
-                        System.IO.File.Delete(path);
-                    }
-                }
+                
+                String path = Path.Combine(Server.MapPath(Constant.Documentpath), Convert.ToString(id) + "/");
+                //if (System.IO.File.Exists(path))
+                //{
+                    System.IO.File.Delete(path);
+              //  }
+          
 
                 db.Documents.Remove(document);
                 db.SaveChanges();
+
+               // var dirPath = Path.Combine(Directory.GetCurrentDirectory(), Constant.Documentpath + Convert.ToString(id) + "/");
+
+               // Directory.Delete(dirPath, true);
+
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
@@ -274,7 +446,7 @@ namespace DocumentManageSystemForGateWay.Controllers
         private bool ValidateFile(HttpPostedFileBase file)
         {
             string fileExtension = System.IO.Path.GetExtension(file.FileName).ToLower();
-            string[] allowedFileTypes = {  ".pdf" , "doc" };
+            string[] allowedFileTypes = {  ".pdf" , "doc" , "docx" };
             if ((file.ContentLength > 0 && file.ContentLength < 2097152) && allowedFileTypes.Contains(fileExtension))
             {
                 return true;

@@ -8,6 +8,6 @@ namespace DocumentManageSystemForGateWay.Models
     public class Constant
     {
         public const string Documentpath = "~/Content/Upload/";
-        public const string DocumentThumbnailPath = "~/Content/ProductImages/Thumbnails/";
+        //public const string DocumentThumbnailPath = "~/Content/ProductImages/Thumbnails/";
     }
 }

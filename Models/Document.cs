@@ -40,5 +40,7 @@ namespace DocumentManageSystemForGateWay.Models
         public  ICollection<FileUpload> FileUploads { get; set; }
         public string Search { get; set; }
 
+        public string FileName { get; set; }
+
     }
 }
